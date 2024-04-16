@@ -1,1 +1,89 @@
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <queue>
+#include <climits>
 
+using namespace std;
+
+#define int long long
+
+#define DEBUG 0
+#if DEBUG
+ifstream fin("input.in");
+#else
+#define fin cin
+#endif
+
+const int inf = LLONG_MAX;
+
+int n,m;
+
+vector<int>dijk(vector<vector<pair<int,int>>>&graf,int nod_start)
+{
+    vector<int>dist(n + 1,inf);
+    vector<bool>viz(n + 1,false);
+    priority_queue<pair<int,int>>pq;
+
+    pq.push({0,nod_start});
+    dist[nod_start] = 0;
+    viz[nod_start] = 1;
+
+    while(!pq.empty())
+    {
+        int nod = pq.top().second;
+        pq.pop();
+
+        for(auto i : graf[nod])
+        {
+            int cost = i.first;
+            int vecin = i.second;
+            if(dist[nod] + cost < dist[vecin])
+            {
+                dist[vecin] = dist[nod] + cost;
+
+                    viz[vecin] = true;
+                    pq.push({-dist[vecin],vecin});
+
+            }
+        }
+    }
+    return dist;
+}
+
+int32_t main()
+{
+    fin>>n>>m;
+    vector<vector<pair<int,int>>>grafa(n + 1),grafb(n + 1);
+    vector<int>cazare(n + 1);
+
+    for(int i = 1; i <= n; i++)
+        fin>>cazare[i];
+
+    for(int i = 1; i <= m; i++)
+    {
+        int x,y,costa,costb;
+        fin>>x>>y>>costa>>costb;
+        grafa[x].push_back({costa,y});
+        grafa[y].push_back({costa,x});
+        grafb[x].push_back({costb,y});
+        grafb[y].push_back({costb,x});
+    }
+
+    vector<int>a = dijk(grafa,1);
+    vector<int>b = dijk(grafb,n);
+
+    int minim = inf;
+
+//    for(auto i : b)
+//        cout<<i<<" ";
+//    cout<<endl;
+
+    for(int i = 1; i <= n; i++)
+    {
+        int Min = a[i] + b[i];
+        minim = min(minim,Min + cazare[i]);
+    }
+    cout<<minim;
+}
