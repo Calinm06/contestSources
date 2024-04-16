@@ -1,0 +1,214 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <algorithm>
+#include <string>
+#include <map>
+#include <set>
+#include <queue>
+
+using namespace std;
+
+ifstream fin("input3.txt");
+
+double minim(const double &a, const double &b)
+{
+    if (a < b)
+        return a;
+    return b;
+}
+
+struct produs
+{
+    double pretProductie;
+    double cantitate;
+    int dataExpirare;
+};
+
+struct cerere
+{
+    string produs;
+    double pret;
+    double cantitate;
+};
+
+struct oferta
+{
+    int dataOferta;
+    int nrProduse;
+    vector<cerere> cer;
+};
+
+struct ingredient
+{
+    string produs;
+    double cantitate;
+};
+
+void citesteProduse(map<string, vector<produs>> &produse)
+{
+    int n;
+    fin >> n;
+    for (int i = 1; i <= n; i++)
+    {
+        string s;
+        produs p;
+        fin >> s >> p.pretProductie >> p.cantitate >> p.dataExpirare;
+        produse[s].push_back(p);
+    }
+}
+
+void citesteOferte(vector<oferta> &oferte)
+{
+    int n;
+    fin >> n;
+    for (int i = 1; i <= n; i++)
+    {
+        oferta o;
+        fin >> o.dataOferta >> o.nrProduse;
+
+        for (int j = 1; j <= o.nrProduse; j++)
+        {
+            cerere c;
+            fin >> c.produs >> c.pret >> c.cantitate;
+            o.cer.push_back(c);
+        }
+        oferte.push_back(o);
+    }
+}
+
+void citesteprodCompuse(map<string, vector<ingredient>> &prodCompuse)
+{
+    int n;
+    fin >> n;
+
+    for (int i = 1; i <= n; i++)
+    {
+        string nume;
+        int nr;
+        fin >> nume >> nr;
+        for (int j = 1; j <= nr; j++)
+        {
+            ingredient ing;
+            fin >> ing.produs >> ing.cantitate;
+            prodCompuse[nume].push_back(ing);
+        }
+    }
+}
+
+double sumaIngredientelor(string prod, double cate, map<string, vector<ingredient>> &prodCompuse, map<string, vector<produs>> &produse)
+{
+    if (produse.find(prod) != produse.end())
+        return produse[prod][0].pretProductie;
+
+    double sum = 0;
+    for (const auto &ing : prodCompuse[prod])
+        sum = sum + (sumaIngredientelor(ing.produs, ing.cantitate, prodCompuse, produse) * ing.cantitate);
+    return sum;
+}
+
+pair<string, double> cumparare(map<string, vector<produs>> &produse, cerere c, map<string, vector<ingredient>> &prodCompuse, bool okCerinta, bool okStergere, int dataOferta)
+{
+
+    pair<string, double> sol = {c.produs, 0};
+    if (produse.find(c.produs) == produse.end())
+    {
+        if (okCerinta)
+            return {};
+
+        int Min = 1e9;
+        for (const auto &ing : prodCompuse[c.produs])
+        {
+            cerere cerr;
+            cerr.cantitate = ing.cantitate * c.cantitate;
+            cerr.produs = ing.produs;
+            cerr.pret = 1e9;
+
+            pair<string, double> aux = cumparare(produse, cerr, prodCompuse, okCerinta, okStergere, dataOferta);
+            int facute = aux.second / ing.cantitate;
+            Min = min(Min, facute);
+        }
+
+        sol = {c.produs, Min};
+        return sol;
+    }
+
+    if (produse[c.produs][0].pretProductie > c.pret)
+        return {};
+
+    for (auto &prod : produse[c.produs])
+    {
+        if (dataOferta < prod.dataExpirare)
+        {
+            double Min = minim(c.cantitate, prod.cantitate);
+            if (okStergere)
+                prod.cantitate -= Min;
+            c.cantitate -= Min;
+
+            sol.second += Min;
+        }
+        if (c.cantitate == 0)
+            break;
+    }
+
+    return sol;
+}
+
+void rezolvare(map<string, vector<produs>> produse, vector<oferta> &oferte, map<string, vector<ingredient>> &prodCompuse, bool ok)
+{
+    double ans = 0;
+    for (const auto &o : oferte)
+    {
+        for (const auto &c : o.cer)
+        {
+            bool aux = !(produse.find(c.produs) == produse.end());
+            pair<string, double> sol = cumparare(produse, c, prodCompuse, ok, aux, o.dataOferta);
+            if (ok)
+            {
+                if (sol.second && produse.find(sol.first) != produse.end())
+                {
+                    cout << sol.first << " " << sol.second << "\n";
+                    ans += c.pret * sol.second;
+                }
+            }
+            else if (sol.second)
+            {
+                double sum = sumaIngredientelor(c.produs, c.cantitate, prodCompuse, produse);
+                if (sum >= c.pret && produse.find(sol.first) == produse.end())
+                    continue;
+
+                cout << sol.first << " " << sol.second << "\n";
+                ans += c.pret * sol.second;
+
+                if (produse.find(sol.first) == produse.end())
+                {
+                    cerere cerr;
+                    cerr.cantitate = sol.second;
+                    cerr.produs = sol.first;
+                    cerr.pret = 1e9;
+                    cumparare(produse, cerr, prodCompuse, ok, true, o.dataOferta);
+                }
+            }
+        }
+    }
+    cout << ans;
+}
+
+int main()
+{
+    map<string, vector<produs>> produse;
+    vector<oferta> oferte;
+    map<string, vector<ingredient>> prodCompuse;
+
+    citesteProduse(produse);
+    citesteOferte(oferte);
+    citesteprodCompuse(prodCompuse);
+
+    for (auto &obj : produse)
+        sort(obj.second.begin(), obj.second.end(), [](const produs a, const produs b)
+             { return a.dataExpirare < b.dataExpirare; });
+
+    rezolvare(produse, oferte, prodCompuse, true);
+    cout << "\n\n";
+    rezolvare(produse, oferte, prodCompuse, false);
+}
