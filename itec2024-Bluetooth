@@ -1,0 +1,66 @@
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+
+using namespace std;
+
+#define DEBUG 0
+#if DEBUG
+ifstream fin("input.in");
+#else
+#define fin cin
+#endif
+
+int n;
+int stj[10],sts[10],drj[10],drs[10];
+
+bool poateMesteca(int a[],int b[])
+{
+    bool ok = false,ok1 = false;
+    for(int i = 1;i <= 8;i++)
+    {
+        if(a[i] == -1 || b[i] == -1)
+            return false;
+        if(a[i] == 0)
+            ok = true;
+        if(b[i] == 0)
+            ok1 = true;
+    }
+    return (ok == true && ok1 == true);
+}
+
+int main()
+{
+    fin>>n;
+    for(int i = 1;i <= n;i++)
+    {
+        char dinte,semn,cond;
+        int aux;
+
+        fin>>dinte>>semn>>cond;
+
+        cond == 'm' ? aux = 1 : aux = -1;
+
+        if(semn == '-')
+        {
+            drj[dinte - '0'] = aux;
+        }
+        else if(semn == '+')
+        {
+            drs[dinte - '0'] = aux;
+        }
+        else if(dinte == '-')
+        {
+            stj[semn - '0'] = aux;
+        }
+        else
+            sts[semn - '0'] = aux;
+    }
+
+    if(poateMesteca(sts,stj))
+        cout<<0;
+    else if(poateMesteca(drs,drj))
+        cout<<1;
+    else cout<<2;
+}
