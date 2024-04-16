@@ -1,0 +1,230 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <algorithm>
+#include <string>
+#include <map>
+#include <set>
+#include <queue>
+
+using namespace std;
+
+ifstream fin("input1.txt");
+
+vector<int> ziua, cant;
+double sol;
+
+struct produs
+{
+    double pretProductie;
+    int cantitate;
+    int dataExpirare;
+};
+
+struct oferta
+{
+    string prod;
+    double pret;
+    int cantitate;
+};
+
+int nrProduse, nrOferte;
+
+void citireProduse(map<string, vector<produs>> &produse)
+{
+    fin >> nrProduse;
+    for (int i = 1; i <= nrProduse; i++)
+    {
+        string nume;
+        fin >> nume;
+
+        produs p;
+        fin >> p.pretProductie >> p.cantitate >> p.dataExpirare;
+
+        produse[nume].push_back(p);
+    }
+}
+
+void citireOferte(vector<oferta> &oferte)
+{
+    fin >> nrOferte;
+
+    for (int i = 1; i <= nrOferte; i++)
+    {
+        int z, c;
+        fin >> z >> c;
+        ziua.push_back(z);
+        cant.push_back(c);
+        for (int j = 1; j <= c; j++)
+        {
+            oferta o;
+            fin >> o.prod >> o.pret >> o.cantitate;
+            oferte.push_back(o);
+        }
+    }
+}
+
+void citesteCp(map<string, vector<pair<string, double>>> &cp)
+{
+    int nrProd;
+    fin >> nrProd;
+
+    for (int i = 1; i <= nrProd; i++)
+    {
+        string nume;
+        int nr;
+        fin >> nume >> nr;
+
+        for (int j = 1; j <= nr; j++)
+        {
+            string prod;
+            double cnt;
+            fin >> prod >> cnt;
+            cp[nume].push_back(make_pair(prod, cnt));
+        }
+    }
+}
+
+void procesareOferta(map<string, vector<produs>> &produse, int dataOferta, oferta o)
+{
+    int cant = 0;
+    for (auto &prod : produse[o.prod])
+    {
+        if (prod.dataExpirare > dataOferta && prod.cantitate > 0)
+        {
+            sol += min(o.cantitate, prod.cantitate) * o.pret;
+            cant += min(o.cantitate, prod.cantitate);
+            int aux = o.cantitate;
+            o.cantitate -= min(o.cantitate, prod.cantitate);
+            prod.cantitate -= min(aux, prod.cantitate);
+        }
+        if (o.cantitate == 0)
+            break;
+    }
+    if (cant)
+        cout << o.prod << " " << cant << endl;
+}
+
+void cerinta1(map<string, vector<produs>> &produse, vector<oferta> &oferte)
+{
+    //double sol = 0;
+    int x = 0;
+    for (int i = 0; i < nrOferte; i++)
+    {
+        for (int q = 0; q < cant[i]; q++)
+        {
+            oferta o = oferte[x];
+            x++;
+            if (produse.find(o.prod) == produse.end())
+                continue;
+
+            if (o.pret < produse[o.prod][0].pretProductie)
+                continue;
+            procesareOferta(produse, ziua[i], o);
+        }
+    }
+
+    cout << sol << endl;
+}
+
+void gasire(vector<pair<string, double>> &v, int dataOferta, int cantitate, map<string, vector<produs>> &produse,int pret,string nume)
+{
+    vector<pair<string,int>>a;
+    for (auto ing : v)
+    {
+        string s = ing.first;
+        int necesar = cantitate * ing.second;
+        int gasite = 0;
+
+        for (auto &prod : produse[s])
+        {
+            if (prod.dataExpirare > dataOferta)
+            {
+                int aux = min(prod.cantitate,necesar);
+                gasite += aux;
+                necesar -= aux;
+            }
+            if(necesar <= 0)
+                break;
+        }
+        gasite = gasite / ing.second;
+        a.push_back({s,gasite});
+    }
+
+    int minim = 1e9;
+    for(auto i : a)
+        minim = min(minim,i.second);
+    sol += minim * pret;
+
+    for(auto i : a)
+    {
+        string s = i.first;
+        int trb = i.second;
+
+         for (auto &prod : produse[s])
+        {
+            if (prod.dataExpirare > dataOferta)
+            {
+                double aux = min(prod.cantitate,trb);
+                trb -= aux;
+                prod.cantitate -= aux;
+            }
+            if(trb == 0)
+                break;
+        }
+    }
+
+    cout<<nume<<" "<<minim<<endl;
+
+}
+
+void cerinta2(map<string, vector<produs>> &produse, vector<oferta> &oferte, map<string, vector<pair<string, double>>> &cp)
+{
+    double sol = 0;
+    int x = 0;
+    for (int i = 0; i < nrOferte; i++)
+    {
+        int dataOferta, nrProd;
+        dataOferta = ziua[i];
+        nrProd = cant[i];
+
+        for (int q = 1; q <= nrProd; q++)
+        {
+            oferta o = oferte[x];
+            x++;
+
+            if (produse.find(o.prod) == produse.end())
+            {
+                gasire(cp[o.prod],dataOferta,nrProd,produse,o.pret,o.prod);
+            }
+
+            if (o.pret < produse[o.prod][0].pretProductie)
+                continue;
+
+            procesareOferta(produse, dataOferta, o);
+        }
+    }
+}
+
+int main()
+{
+    map<string, vector<produs>> produse;
+    vector<oferta> oferte;
+    citireProduse(produse);
+    citireOferte(oferte);
+
+    for (auto p : produse)
+    {
+        sort(p.second.begin(), p.second.end(), [](produs a, produs b)
+             { return a.dataExpirare > b.dataExpirare; });
+    }
+
+    cerinta1(produse, oferte);
+    cout<<endl;
+
+    map<string, vector<pair<string, double>>> cp;
+    citesteCp(cp);
+
+    sol = 0;
+    cerinta2(produse,oferte,cp);
+}
