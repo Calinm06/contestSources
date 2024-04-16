@@ -1,0 +1,193 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+struct pacient
+{
+    string prob;
+    string sec;
+    int h;
+    int d;
+    int pt;
+};
+
+struct doctor
+{
+    string nume;
+    int c;
+    vector<string>prof;
+    int oc;///pana la ce ora e ocupat
+};
+
+
+
+int n,m;
+vector<pacient>a;
+vector<doctor>b;
+
+ifstream fin("input.in");
+ofstream fout("input.out");
+
+void cerinta1()
+{
+    vector<doctor>sol(10000);
+
+    for(int i = 0; i < n; i++)
+    {
+        int ok = 0;
+
+        for(int j = 0; j < m; j++)
+        {
+            for(int k = 0; k < b[j].prof.size(); k++)
+            {
+                if(b[j].prof[k] == a[i].sec && b[j].oc + a[i].d <= 17)
+                {
+                    b[j].oc = b[j].oc + a[i].d;
+                    sol[j].c++;
+                    sol[j].prof.push_back(a[i].prob);
+                    ok = 1;
+                    break;
+                }
+
+            }
+
+            if(ok == 1)
+                break;
+        }
+    }
+    for(int i = 0; i < m; i++)
+    {
+        fout<<b[i].nume<<" "<<sol[i].c<<" ";
+        for(int j = 0; j < sol[i].prof.size(); j++)
+            fout<<sol[i].prof[j]<<" ";
+        fout<<"\n";
+    }
+}
+
+int cmp(pacient a,pacient b)
+{
+    if(a.h > b.h)
+        return 0;
+    if(a.h == b.h && a.pt < b.pt)
+        return 0;
+    return 1;
+}
+
+struct rasp_b
+{
+    int c;
+    vector<pair<string,int>>rez;
+};
+
+void cerinta2()
+{
+    sort(a.begin(),a.end(),cmp);
+    queue<pacient>q;
+    vector<rasp_b>sol(10000);
+
+    for(int i = 0; i < m; i++)
+        b[i].oc = 9;
+
+    for(int i = 0; i < a.size(); i++)
+    {
+        if(q.empty() == 0)
+        {
+            while(!q.empty())
+            {
+
+                int ok = 0;
+                for(int j = 0; j < m; j++)
+                {
+                    for(int k = 0; k < b[j].prof.size(); k++)
+                    {
+                        if(b[j].prof[k] == q.front().sec && q.front().d + b[j].oc <= 17)
+                        {
+                            sol[j].c++;
+                            sol[j].rez.push_back({q.front().prob,b[j].oc});
+                            b[j].oc = b[j].oc + q.front().d;
+                            ok = 1;
+
+                        }
+                    }
+                }
+                if(ok == 0)
+                {
+                    break;
+                }
+                else
+                    q.pop();
+
+            }
+        }
+
+
+        int ok = 0;
+        for(int j = 0; j < m; j++)
+        {
+            for(int k = 0; k < b[j].prof.size(); k++)
+            {
+                if(b[j].prof[k] == a[i].sec && b[j].oc + a[i].d <= 17)
+                {
+                    b[j].oc = b[j].oc + a[i].d;
+                    sol[j].c++;
+                    sol[j].rez.push_back(make_pair(a[i].prob,a[i].h));
+                    ok = 1;
+                    break;
+                }
+
+            }
+
+            if(ok == 1)
+            {
+                break;
+            }
+        }
+        if(ok == 0)
+        {
+            q.push(a[i]);
+        }
+
+
+
+    }
+    for(int i = 0; i < m; i++)
+    {
+        fout<<b[i].nume<<" "<<sol[i].c<<" ";
+        for(int j = 0; j < sol[i].rez.size(); j++)
+            fout<<sol[i].rez[j].first<<" "<<sol[i].rez[j].second<<" ";
+        fout<<"\n";
+    }
+}
+
+
+int main()
+{
+    fin>>n;
+    for(int i = 0; i < n; i++)
+    {
+        string aux,aux1;
+        int ora_sosire,durata,prioritatea;
+
+        fin>>aux>>aux1>>ora_sosire>>durata>>prioritatea;
+        a.push_back({aux,aux1,ora_sosire,durata,prioritatea});
+    }
+    fin>>m;
+    for(int i = 0; i < m; i++)
+    {
+        string aux,aux2;
+        int aa;
+        vector<string>aux1;
+
+        fin>>aux>>aa;
+
+        for(int j = 0; j < aa; j++)
+        {
+            cin>>aux2;
+            aux1.push_back(aux2);
+        }
+        b.push_back({aux,aa,aux1,9});
+
+    }
+
+    cerinta1();
+    cerinta2();
+}
