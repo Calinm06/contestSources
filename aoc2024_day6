@@ -1,0 +1,206 @@
+///part1
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <algorithm>
+#include <vector>
+
+using namespace std;
+
+ifstream fin("_input.txt");
+
+vector<string> a;
+string s;
+
+int main()
+{
+    while (fin >> s)
+    {
+        a.push_back(s);
+    }
+
+    int n = a.size();
+    int m = a[0].size();
+
+    int startx, starty;
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++)
+            if (a[i][j] == '^')
+            {
+                startx = i;
+                starty = j;
+            }
+
+    int dir = 1; // 1 sus, 2 dr, 3 jos,4 st
+
+    int x = startx, y = starty;
+
+    while (x && x != n - 1 && y && y != m - 1)
+    {
+        if (dir == 1)
+        {
+            while (x > 0 && a[x][y] != '#')
+                {
+                    a[x][y] = '?';
+                    x--;
+                }
+            x++;
+            dir = 2;
+        }
+        else if (dir == 2)
+        {
+            while (y < m && a[x][y] != '#')
+            {
+                a[x][y] = '?';
+                y++;
+            }
+            y--;
+            dir = 3;
+        }
+        else if (dir == 3)
+        {
+            while (x < n && a[x][y] != '#')
+            {
+                a[x][y] = '?';
+                x++;
+            }
+            x--;
+            dir = 4;
+        }
+        else if(dir == 4)
+        {
+            while(y > 0 && a[x][y] != '#')
+            {
+                a[x][y] = '?';
+                y--;
+            }
+            y++;
+            dir = 1;
+        }
+    }
+
+    int sol = 0;
+    for(auto i : a)
+        sol += count(i.begin(),i.end(),'?');
+    cout<<sol;
+}
+
+
+///part2
+
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <algorithm>
+#include <vector>
+
+using namespace std;
+
+ifstream fin("_input.txt");
+
+vector<string> a;
+string s;
+int startx, starty, n, m;
+
+bool solve()
+{
+    int dir = 1; // 1 sus, 2 dr, 3 jos,4 st
+    int x = startx, y = starty;
+    int sol = 0;
+    vector<vector<int>> viz(n, vector<int>(m + 1, 0));
+
+    while (x && x < n - 1 && y && y < m - 1)
+    {
+        if (dir == 1)
+        {
+            while (x > 0 && a[x][y] != '#')
+            {
+                viz[x][y]++;
+                x--;
+            }
+            if (x >= 0 && x < n && y >= 0 && y < m && a[x][y] == '#')
+                x++;
+            dir = 2;
+        }
+        else if (dir == 2)
+        {
+            while (y < m && a[x][y] != '#')
+            {
+                viz[x][y]++;
+                y++;
+            }
+            if (x >= 0 && x < n && y >= 0 && y < m && a[x][y] == '#')
+                y--;
+            dir = 3;
+        }
+        else if (dir == 3)
+        {
+            while (x < n && a[x][y] != '#')
+            {
+                viz[x][y]++;
+                x++;
+            }
+            if (x >= 0 && x < n && y >= 0 && y < m && a[x][y] == '#')
+                x--;
+            dir = 4;
+        }
+        else if (dir == 4)
+        {
+            while (y > 0 && a[x][y] != '#')
+            {
+                viz[x][y]++;
+                y--;
+            }
+            if (x >= 0 && x < n && y >= 0 && y < m && a[x][y] == '#')
+                y++;
+            dir = 1;
+        }
+
+        for (auto i : viz)
+        {
+            for (int j : i)
+            {
+                if (j > 5)
+                {
+                    return true;
+                }
+                //cout<<j<<endl;
+            }
+        }
+    }
+    return false;
+}
+
+int main()
+{
+    while (fin >> s)
+    {
+        a.push_back(s);
+    }
+
+    n = a.size();
+    m = a[0].size();
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++)
+            if (a[i][j] == '^')
+            {
+                startx = i;
+                starty = j;
+            }
+
+    int sol = 0;
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            if (a[i][j] == '.')
+            {
+                a[i][j] = '#';
+                sol += solve();
+                a[i][j] = '.';
+            }
+        }
+    }
+    cout << sol;
+}
