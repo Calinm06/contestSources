@@ -1,0 +1,144 @@
+///part1
+
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <algorithm>
+#include <vector>
+#include <map>
+#include <set>
+#include <cstdint>
+
+using namespace std;
+
+ifstream fin("_input.txt");
+
+vector<int> solve(string s)
+{
+    vector<int> sol;
+    int aux = 0;
+    for (int i = 0; i < s.size(); i++)
+    {
+        for (int j = 1; j <= (s[i] - '0'); j++)
+            if (i % 2 == 0)
+                sol.push_back(aux);
+            else
+                sol.push_back(-1);
+        if (i % 2 == 0)
+            aux++;
+    }
+    return sol;
+}
+
+int main()
+{
+    string s;
+    fin >> s;
+    vector<int> a = solve(s);
+    int st = 0, dr = a.size() - 1;
+
+    while (st < dr)
+    {
+        if (a[st] == -1 && a[dr] != -1)
+            swap(a[st], a[dr]);
+
+        if (a[st] != -1)
+            st++;
+        if (a[dr] == -1)
+            dr--;
+    }
+    
+    long long ans = 0;
+    for(int i = 0;i < a.size();i++)
+        if(a[i] != -1)
+            ans += 1LL * i * a[i];
+    
+    cout<<ans;
+}
+
+///part2
+
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <algorithm>
+#include <vector>
+#include <map>
+#include <set>
+#include <cstdint>
+
+using namespace std;
+
+ifstream fin("_input.txt");
+
+vector<int> solve(string s)
+{
+    vector<int> sol;
+    int aux = 0;
+    for (int i = 0; i < s.size(); i++)
+    {
+        for (int j = 1; j <= (s[i] - '0'); j++)
+            if (i % 2 == 0)
+                sol.push_back(aux);
+            else
+                sol.push_back(-1);
+        if (i % 2 == 0)
+            aux++;
+    }
+    return sol;
+}
+
+int main()
+{
+    string s;
+    fin >> s;
+    vector<int> a = solve(s);
+    int dr = a.size() - 1;
+
+    while (dr > 0)
+    {
+        if (a[dr] != -1)
+        {
+            int ocupate = 1;
+            while (dr >= 0 && a[dr] == a[dr - 1] && a[dr] != -1)
+            {
+                dr--;
+                ocupate++;
+            }
+
+            for (int i = 0; i < dr; i++)
+            {
+                if (a[i] == -1)
+                {
+                    int libere = 0, st = i;
+                    while (st < a.size() && a[st] == -1)
+                    {
+                        st++;
+                        libere++;
+                    }
+                    if (libere >= ocupate)
+                    {
+                        int ddr = dr, stt = st - libere;
+                        for (int j = 0; j < ocupate; j++)
+                        {
+                            swap(a[ddr], a[stt]);
+                            ddr++;
+                            stt++;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        dr--;
+    }
+
+    long long ans = 0;
+    for (int i = 0; i < a.size(); i++)
+        if (a[i] != -1)
+            ans += 1LL * i * a[i];
+
+    cout << ans;
+}
+
+/// part2
