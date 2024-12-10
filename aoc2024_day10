@@ -1,0 +1,200 @@
+part1
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <queue>
+#include <algorithm>
+
+using namespace std;
+
+ifstream fin("input");
+
+struct coada
+{
+    int i;
+    int j;
+    char val;
+};
+
+int n,m;
+int dx[] = {0,1,0,-1};
+int dy[] = {1,0,-1,0};
+
+bool inmat(int i,int j)
+{
+    if(i >= 0 && i < n && j >= 0 && j < m)
+        return true;
+    return false;
+}
+
+int lee(vector<string>a,int i,int j)
+{
+    vector<vector<int>>viz(n,vector<int>(m,false));
+    queue<coada>q;
+    q.push({i,j,'0'});
+    viz[i][j] = 1;
+    while(q.empty() == false)
+    {
+        int x = q.front().i;
+        int y = q.front().j;
+        char val = q.front().val;
+        q.pop();
+
+        if(a[x][y] == '9')
+        {
+            viz[x][y] = -1;
+            continue;
+        }
+
+        for(int d = 0;d < 4;d++)
+        {
+            if(inmat(x + dx[d],y + dy[d]) && a[x + dx[d]][y + dy[d]] == val + 1 && viz[x + dx[d]][y + dy[d]] == 0)
+            {
+                q.push({x + dx[d],y + dy[d],val + 1});
+                viz[x + dx[d]][y + dy[d]] = 1;
+            }
+        }
+    }
+
+    int sol = 0;
+    for(auto i : viz)
+        sol += count(i.begin(),i.end(),-1);
+    return sol;
+}
+
+int main()
+{
+    vector<string>a;
+    string s;
+    while(getline(fin,s))
+    {
+        a.push_back(s);
+    }
+
+    n = a.size();
+    m = a[0].size();
+
+    int sol = 0;
+    for(int i = 0;i < n;i++)
+    {
+        for(int j = 0;j < m;j++)
+        {
+            if(a[i][j] == '0')
+            {
+                sol += lee(a,i,j);
+            }
+        }
+    }
+    cout<<sol;
+}
+
+
+
+///part2 
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <queue>
+#include <algorithm>
+
+using namespace std;
+
+ifstream fin("_input.txt");
+
+struct coada
+{
+    int i;
+    int j;
+    char val;
+};
+
+int n, m;
+int dx[] = {0, 1, 0, -1};
+int dy[] = {1, 0, -1, 0};
+
+bool inmat(int i, int j)
+{
+    if (i >= 0 && i < n && j >= 0 && j < m)
+        return true;
+    return false;
+}
+
+int lee(int i, int j, vector<string> a)
+{
+    queue<coada> q;
+    vector<vector<int>> viz(n, vector<int>(m, 0));
+    vector<vector<int>> dp(n, vector<int>(m, 0));
+
+    q.push({i, j, '0'});
+    viz[i][j] = 1;
+    dp[i][j] = 1;
+
+    while (q.empty() == false)
+    {
+        int x = q.front().i;
+        int y = q.front().j;
+        char val = q.front().val;
+        q.pop();
+
+        for (int d = 0; d < 4; d++)
+        {
+            int xnou = x + dx[d];
+            int ynou = y + dy[d];
+
+            if (inmat(xnou, ynou))
+            {
+                if (a[xnou][ynou] == val + 1)
+                {
+                    if (viz[xnou][ynou] == 0)
+                    {
+                        viz[xnou][ynou] = 1;
+                        char c = val + 1;
+                        q.push({xnou, ynou, c});
+                    }
+                }
+                else if (a[xnou][ynou] == val - 1)
+                {
+                    dp[x][y] += dp[xnou][ynou];
+                }
+            }
+        }
+    }
+
+    int sol = 0;
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            if (a[i][j] == '9')
+                sol += dp[i][j];
+        }
+    }
+
+    return sol;
+}
+
+int main()
+{
+    vector<string> a;
+    string s;
+    while (getline(fin, s))
+    {
+        a.push_back(s);
+    }
+
+    n = a.size();
+    m = a[0].size();
+
+    int sol = 0;
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            if (a[i][j] == '0')
+                sol += lee(i,j,a);
+        }
+    }
+    cout << sol;
+}
