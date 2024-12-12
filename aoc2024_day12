@@ -1,0 +1,136 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <queue>
+#include <algorithm>
+#include <map>
+#include <cstdint>
+
+using namespace std;
+
+ifstream fin("_input.txt");
+ofstream fout("y.txt");
+
+int m, n;
+int dx[] = {-1, 0, 1, 0};
+int dy[] = {0, 1, 0, -1};
+
+bool inmat(int i, int j)
+{
+    if (i >= 0 && i < n && j >= 0 && j < m)
+        return true;
+
+    return false;
+}
+
+vector<pair<int, int>> lee(vector<string> a, vector<vector<bool>> &viz, int i, int j)
+{
+    vector<pair<int, int>> sol;
+    queue<pair<int, int>> q;
+    q.push({i, j});
+    viz[i][j] = true;
+
+    while (q.empty() == false)
+    {
+        int x = q.front().first;
+        int y = q.front().second;
+        sol.push_back(q.front());
+        q.pop();
+
+        for (int d = 0; d < 4; d++)
+        {
+            int xnou = x + dx[d];
+            int ynou = y + dy[d];
+
+            if (inmat(xnou, ynou) && viz[xnou][ynou] == false && a[xnou][ynou] == a[x][y])
+            {
+                viz[xnou][ynou] = true;
+                q.push({xnou, ynou});
+            }
+        }
+    }
+
+    return sol;
+}
+
+bool ortogonale(int dir1, int dir2)
+{
+    if ((dir1 + dir2 == 2) || (dir1 + dir2 == 4) || dir1 == dir2)
+        return true;
+
+    return false;
+}
+
+pair<int, int> mijloc(int x, int y, int d1, int d2)
+{
+    int dirx = dx[d1] != 0 ? dx[d1] : dy[d1];
+    int diry = dx[d2] != 0 ? dx[d2] : dy[d2];
+    return {x + dirx, y + diry};
+}
+
+int arie(vector<string> a, vector<pair<int, int>> pct)
+{
+    int sol = 0;
+    for (int i = 0; i < pct.size(); i++)
+    {
+        int x = pct[i].first;
+        int y = pct[i].second;
+        for (int dir1 = 0; dir1 < 4; dir1++)
+        {
+            for (int dir2 = dir1 + 1; dir2 < 4; dir2++)
+            {
+                if (ortogonale(dir1, dir2) == false)
+                {
+                    pair<int, int> pct1 = {x + dx[dir1], y + dy[dir1]};
+                    pair<int, int> pct2 = {x + dx[dir2], y + dy[dir2]};
+
+                    /// verificam colt exterior
+                    bool ok1 = (inmat(pct1.first, pct1.second) == false) || a[pct1.first][pct1.second] != a[x][y];
+                    bool ok2 = (inmat(pct2.first, pct2.second) == false) || a[pct2.first][pct2.second] != a[x][y];
+                    if (ok1 && ok2)
+                        sol++;
+
+                    /// verificam colt interior si gasim pct mijloc
+                    if (ok1 == false && ok2 == false)
+                    {
+                        pair<int,int>mid = mijloc(x,y,dir1,dir2);
+                        if(a[mid.first][mid.second] != a[x][y])
+                            sol++;
+                    }
+                }
+            }
+        }
+    }
+    return sol;
+}
+
+int main()
+{
+    vector<string> a;
+    string s;
+    while (getline(fin, s))
+    {
+        a.push_back(s);
+    }
+
+    n = a.size();
+    m = a[0].size();
+
+    vector<vector<bool>> viz(n, vector<bool>(m, false));
+
+    int sol = 0;
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            if (viz[i][j] == false)
+            {
+                vector<pair<int, int>> pct = lee(a, viz, i, j);
+                //cout << arie(a, pct) << endl;
+                sol += pct.size() * arie(a,pct);
+            }
+        }
+    }
+     cout << sol;
+}
