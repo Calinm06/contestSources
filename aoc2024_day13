@@ -1,0 +1,55 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <queue>
+#include <algorithm>
+#include <climits>
+#include <cstdint>
+
+using namespace std;
+#define int long long
+
+ifstream fin("_input.txt");
+ofstream fout("y.txt");
+
+int m, n;
+int dx[] = {-1, 0, 1, 0};
+int dy[] = {0, 1, 0, -1};
+
+struct pct
+{
+    int x, y;
+};
+
+int32_t main()
+{
+    pct a, b, prize;
+    int sol = 0;
+    while (fin >> a.x >> a.y >> b.x >> b.y >> prize.x >> prize.y)
+    {
+        vector<vector<int>> m(5, vector<int>(5, 0));
+        m[1][1] = a.x;
+        m[1][2] = b.x;
+        m[2][1] = a.y;
+        m[2][2] = b.y;
+
+        int detM = m[2][2] * m[1][1] - m[1][2] * m[2][1];
+        int b1 = prize.x + 10000000000000;
+        int b2 = prize.y + 10000000000000;
+
+        if (detM != 0)
+        {
+            int xa, xb;
+            xa = xb = 0;
+            
+            if (abs(b1 * m[2][2] - m[1][2] * b2) % abs(detM) == 0 && abs(b2 * m[1][1] - m[2][1] * b1) % abs(detM) == 0)
+            {
+                xa = (b1 * m[2][2] - m[1][2] * b2) / detM;
+                xb = (b2 * m[1][1] - m[2][1] * b1) / detM;
+            }
+            sol += 3 * xa + xb;
+        }
+    }
+    cout << sol;
+}
