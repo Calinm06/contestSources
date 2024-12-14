@@ -1,0 +1,154 @@
+/// part1
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <queue>
+#include <algorithm>
+#include <climits>
+#include <cstdint>
+
+using namespace std;
+
+
+ifstream fin("_input.txt");
+int n = 103;
+int m = 101;
+
+int cadran(int i, int j)
+{
+    int midx = n / 2;
+    int midy = m / 2;
+
+    if (i < midx && j < midy)
+        return 1;
+
+    if (i < midx && j > midy)
+        return 2;
+
+    if (i > midx && j < midy)
+        return 3;
+
+    if (i > midx && j > midy)
+        return 4;
+
+    return 0;
+}
+
+int main()
+{
+    int x, y, xplus, yplus;
+    char c;
+    vector<int> sol(5, 0);
+    while (fin >> y >> c >> x >> yplus >> c >> xplus)
+    {
+        for (int i = 1; i <= 100; i++)
+        {
+            int xnou = x + xplus;
+            int ynou = y + yplus;
+
+            if (xnou < 0)
+                xnou = n + xnou;
+            else if (xnou >= n)
+                xnou %= n;
+
+            if (ynou < 0)
+                ynou = m + ynou;
+            else if (ynou >= m)
+                ynou %= m;
+
+            x = xnou;
+            y = ynou;
+        }
+        int cad = cadran(x, y);
+        sol[cad]++;
+    }
+
+    long long ans = 1;
+    for (int i = 1; i <= 4; i++)
+        ans *= 1LL * sol[i];
+
+    cout << ans;
+}
+
+
+///part2
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <queue>
+#include <algorithm>
+#include <climits>
+#include <cstdint>
+
+using namespace std;
+
+ifstream fin("_input.txt");
+ofstream fout("output.out");
+int n = 103;
+int m = 101;
+
+struct pct
+{
+    int x, y, xplus, yplus;
+};
+
+main()
+{
+    int x, y, xplus, yplus;
+    char c;
+
+    vector<pct> a;
+
+    while (fin >> y >> c >> x >> yplus >> c >> xplus)
+    {
+        pct aux;
+        aux.x = x;
+        aux.y = y;
+        aux.xplus = xplus;
+        aux.yplus = yplus;
+        a.push_back(aux);
+    }
+    for (int i = 1; i <= 10503 ; i++)
+    {
+        vector<vector<char>> viz(n + 1, vector<char>(m + 1, ' '));
+        for (auto &j : a)
+        {
+            x = j.x;
+            y = j.y;
+            xplus = j.xplus;
+            yplus = j.yplus;
+
+            int xnou = x + xplus;
+            int ynou = y + yplus;
+
+            if (xnou < 0)
+                xnou = n + xnou;
+            else if (xnou >= n)
+                xnou %= n;
+
+            if (ynou < 0)
+                ynou = m + ynou;
+            else if (ynou >= m)
+                ynou %= m;
+
+            x = xnou;
+            y = ynou;
+
+            j.x = xnou;
+            j.y = ynou;
+
+            viz[xnou][ynou] = '.';
+        }
+
+        fout<<"iterarea "<<i<<"\n";
+        for(auto j : viz)
+        {
+            for(char k : j)
+                fout<<k;
+            fout<<"\n";
+        }
+    }
+
+}
