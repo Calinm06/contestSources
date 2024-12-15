@@ -1,0 +1,84 @@
+///part1
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <queue>
+#include <algorithm>
+#include <climits>
+#include <map>
+#include <cstdint>
+
+using namespace std;
+
+ifstream fin("_input.txt");
+
+int n = 50, m;
+
+int dx[] = {-1, 0, 1, 0};
+int dy[] = {0, 1, 0, -1};
+
+map<char, int> directii = {{'^', 0}, {'>', 1}, {'v', 2}, {'<', 3}};
+
+
+int main()
+{
+    vector<string> a;
+    int x, y;
+    for (int i = 0; i < n; i++)
+    {
+        string s;
+        fin >> s;
+        a.push_back(s);
+        for (int j = 0; j < s.size(); j++)
+            if (a[i][j] == '@')
+            {
+                x = i;
+                y = j;
+            }
+    }
+    m = a[0].size();
+
+    char c;
+    while (fin >> c)
+    {
+        int dir = directii[c];
+        int xnou = x + dx[dir], ynou = y + dy[dir];
+
+        if (a[xnou][ynou] == '.')
+        {
+            x = xnou;
+            y = ynou;
+        }
+        else if (a[xnou][ynou] == '#')
+            continue;
+        else
+        {
+            while (a[xnou][ynou] == 'O')
+            {
+                xnou += dx[dir];
+                ynou += dy[dir];
+            }
+            if (a[xnou][ynou] != '#')
+            {
+                x += dx[dir];
+                y += dy[dir];
+                swap(a[x][y], a[xnou][ynou]);
+            }
+        }
+    }
+
+    int sol = 0;
+    for(int i = 0;i < n;i++)
+    {
+        for(int j = 0;j < m;j++)
+        {
+            if(a[i][j] == 'O')
+                sol += 100 * i + j;
+        }
+    }
+    cout<<sol;
+}
+
+///part2
+
