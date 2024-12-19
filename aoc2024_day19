@@ -1,0 +1,137 @@
+/// part1
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <queue>
+#include <algorithm>
+#include <map>
+#include <set>
+#include <cstdint>
+
+using namespace std;
+
+ifstream fin("_input.txt");
+ofstream fout("y.txt");
+
+map<char, vector<string>> mp;
+
+void rec(string s, bool &ok, set<string> &fr)
+{
+   // cout << s << " " << ok << "\n";
+    if (s.empty() == true)
+        ok = true;
+    else if (ok == false && s.empty() == false)
+    {
+        for (auto pre : mp[s[0]])
+        {
+            if (s.compare(0, pre.size(), pre) == 0)
+            {
+                string aux = s;
+                aux.erase(0, pre.size());
+                if (fr.find(aux) == fr.end())
+                    rec(aux, ok, fr);
+                if (ok == false)
+                    fr.insert(aux);
+            }
+        }
+    }
+}
+
+int main()
+{
+    string s;
+    char c;
+
+    while (fin >> s >> c)
+    {
+        mp[s[0]].push_back(s);
+        // cout<<s<<"\n";
+        if (c == '1')
+            break;
+    }
+
+    int sol = 0;
+    while (fin >> s)
+    {
+        // cout<<s<<"\n";
+        bool ok = false;
+        set<string> fr;
+        rec(s, ok, fr);
+        if (ok)
+            sol++;
+    }
+    cout << sol;
+}
+
+
+///part2
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <queue>
+#include <algorithm>
+#include <map>
+#include <set>
+#include <cstdint>
+
+using namespace std;
+
+#define int long long
+
+ifstream fin("_input.txt");
+ofstream fout("y.txt");
+
+map<char, vector<string>> mp;
+set<string> fr;
+map<string, int> dp;
+
+int rec(string s)
+{
+    if (dp.find(s) != dp.end())
+        return dp[s];
+    else if(s.empty() == false)
+    {
+        for (auto pre : mp[s[0]])
+        {
+            if (s.compare(0, pre.size(), pre) == 0)
+            {
+                string aux = s;
+                aux.erase(0, pre.size());
+                int x = rec(aux);
+
+                if (x == 0)
+                {
+                    fr.insert(aux);
+                }
+                else 
+                    dp[s] += x;
+            }
+        }
+        return dp[s];
+    }
+    else 
+        return 1;
+}
+
+int32_t main()
+{
+    string s;
+    char c;
+
+    while (fin >> s >> c)
+    {
+        mp[s[0]].push_back(s);
+       // dp[s]++;
+        if (c == '1')
+            break;
+    }
+
+    int sol = 0;
+    while (fin >> s)
+    {
+       sol += rec(s);
+    }
+    cout << sol;
+}
