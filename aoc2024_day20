@@ -1,0 +1,103 @@
+/// part1
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <queue>
+#include <algorithm>
+#include <map>
+#include <set>
+#include <cstdint>
+
+using namespace std;
+
+ifstream fin("_input.txt");
+ofstream fout("y.txt");
+
+int n, m, xe, ye;
+int dx[] = {-1, 0, 1, 0};
+int dy[] = {0, 1, 0, -1};
+
+bool inmat(int i, int j)
+{
+    if (i >= 0 && i < n && j >= 0 && j < m)
+        return true;
+
+    return false;
+}
+
+int lee(vector<string> a, int startx, int starty)
+{
+    queue<pair<int, int>> q;
+    vector<vector<int>> viz(n, vector<int>(m, 0));
+
+    q.push({startx, starty});
+    viz[startx][starty] = 1;
+
+    while (q.empty() == false)
+    {
+        int x = q.front().first;
+        int y = q.front().second;
+        q.pop();
+
+        for (int d = 0; d < 4; d++)
+        {
+            int xnou = x + dx[d];
+            int ynou = y + dy[d];
+
+            if (inmat(xnou, ynou) && viz[xnou][ynou] == 0 && a[xnou][ynou] != '#')
+            {
+                q.push({xnou, ynou});
+                viz[xnou][ynou] = viz[x][y] + 1;
+            }
+        }
+    }
+
+    return viz[xe][ye] - 1;
+}
+
+int main()
+{
+    vector<string> a;
+    string s;
+    while ((getline(fin, s)))
+        a.push_back(s);
+
+    n = a.size();
+    m = a[0].size();
+
+    int startx, starty;
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++)
+            if (a[i][j] == 'E')
+            {
+                xe = i;
+                ye = j;
+            }
+            else if (a[i][j] == 'S')
+            {
+                startx = i;
+                starty = j;
+            }
+
+    int cost = lee(a, startx, starty);
+
+    int sol = 0;
+    
+    for(int i = 0;i < n;i++)
+    {
+        for(int j = 0;j < m;j++)
+        {
+            if(a[i][j] == '#')
+            {
+                a[i][j] = '.';
+                int rasp = lee(a,startx,starty);
+                if(cost - rasp >= 100)
+                    sol++;
+                a[i][j] = '#';
+            }
+        }
+    }
+
+    cout << sol;
+}
